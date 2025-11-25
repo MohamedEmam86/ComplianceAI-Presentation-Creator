@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Presentation Creator Tool</title>
+<style>
+  :root {
+    --primary:#0d6efd;
+    --secondary:#6c757d;
+    --bg:#f8f9fa;
+    --gradient-start:#008080; /* teal */
+    --gradient-end:#4b0082;   /* deep purple */
+    --radius:15px;
+    --shadow:0 4px 12px rgba(0,0,0,0.1);
+  }
+  body {font-family:Arial,sans-serif;margin:0;padding:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;}
+  h1{margin-top:1rem;}
+  #app{max-width:900px;width:100%;padding:1rem;}
+  #dropzone{
+    border:2px dashed var(--secondary);
+    border-radius:var(--radius);
+    padding:2rem;
+    text-align:center;
+    color:var(--secondary);
+    cursor:pointer;
+    margin-bottom:1rem;
+    transition:background .3s;
+  }
+  #dropzone.dragover{background:rgba(0,0,0,.05);}
+  .control-group{margin-bottom:1rem;}
+  select, input[type="checkbox"]{margin-right:.5rem;}
+  button{background:var(--primary);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:var(--radius);cursor:pointer;box-shadow:var(--shadow);}
+  button:hover{background:#0056b3;}
+  #outputArea{width:100%;height:300px;margin-top:1rem;font-family:monospace;}
+  a#downloadLink{display:inline-block;margin-top:.5rem;padding:.4rem .8rem;background:#28a745;color:#fff;border-radius:var(--radius);text-decoration:none;}
+  .theme-dark{--primary:#212529;--secondary:#adb5bd;--bg:#343a40;--gradient-start:#212529;--gradient-end:#495057;}
+  .theme-minimal{--primary:#495057;--secondary:#6c757d;--bg:#ffffff;--gradient-start:#e9ecef;--gradient-end:#dee2e6;}
+  .presentation{font-family:Arial,sans-serif;padding:2rem;background:linear-gradient(135deg,var(--gradient-start),var(--gradient-end));color:#fff;min-height:100vh;}
+  .flip-card{background:#fff;color:#000;border-radius:var(--radius);box-shadow:var(--shadow);perspective:1000px;margin:1rem;}
+  .flip-card-inner{position:relative;transition:transform .6s;transform-style:preserve-3d;}
+  .flip-card:hover .flip-card-inner{transform:rotateY(180deg);}
+  .flip-card-front,.flip-card-back{position:absolute;width:100%;backface-visibility:hidden;padding:1rem;border-radius:var(--radius);}
+  .flip-card-back{transform:rotateY(180deg);background:#f8f9fa;}
+  .accordion{background:#fff;color:#000;border-radius:var(--radius);margin:1rem;box-shadow:var(--shadow);}
+  .accordion summary{padding:1rem;cursor:pointer;font-weight:bold;}
+  .accordion p{padding:0 1rem 1rem;}
+  .pop-card{background:#fff;color:#000;border-radius:var(--radius);margin:1rem;padding:1rem;box-shadow:var(--shadow);}
+  .timeline{list-style:none;padding:0;margin:1rem 0;position:relative;}
+  .timeline::before{content:'';position:absolute;left:20px;width:4px;background:#fff;height:100%;}
+  .timeline li{margin-left:50px;padding:0.5rem 0;position:relative;}
+  .timeline .date{font-weight:bold;display:block;}
+  .stacked-bar{width:100%;max-width:600px;height:300px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin:1rem auto;}
+</style>
+</head>
+<body>
+<div id="app">
+<h1>Presentation Creator Tool</h1>
+
+<div id="dropzone">Drop files here or click to browse</div>
+
+<div class="control-group">
+<label for="themeSelect">Theme / Style:</label>
+<select id="themeSelect">
+  <option value="corporate">Corporate Teal GRC</option>
+  <option value="dark">Dark Mode Tech</option>
+  <option value="minimal">Clean Minimalist</option>
+</select>
+</div>
+
+<div class="control-group">
+<span>Visualization Toggles:</span><br>
+<label><input type="checkbox" class="vizToggle" value="flipCard" checked> Flip Cards</label>
+<label><input type="checkbox" class="vizToggle" value="accordion" checked> Expandable Accordions</label>
+<label><input type="checkbox" class="vizToggle" value="popCard" checked> Pop‑out Cards</label>
+<label><input type="checkbox" class="vizToggle" value="timeline" checked> Interactive Timelines</label>
+<label><input type="checkbox" class="vizToggle" value="stackedBar" checked> Stacked Bar Charts</label>
+</div>
+
+<div class="control-group">
+<label><input type="checkbox" id="demoMode" checked> Demo Mode (uses sample data)</label>
+</div>
+
+<button id="generateBtn">Generate Presentation</button>
+
+<a id="downloadLink" href="#" style="display:none;">Download presentation.html</a>
+<textarea id="outputArea" placeholder="Generated HTML will appear here…" readonly></textarea>
+</div>
+
+<script>
+/* ---------- Utility Functions ---------- */
+function setTheme(theme) {
+  document.body.classList.remove('theme-dark','theme-minimal');
+  if (theme === 'dark') document.body.classList.add('theme-dark');
+  else if (theme === 'minimal') document.body.classList.add('theme-minimal');
+}
+
+/* ---------- Demo Data (simulated Gemini responses) ---------- */
+function getDemoData() {
+  const parsed = {
+    blocks: [
+      {title:"Risk Score", value:78, type:"metric"},
+      {title:"Budget Variance", value:"-12%", type:"metric"},
+      {title:"Q1‑2024 Revenue", value:"$1.2M", type:"timeSeries", series:[{date:"2024‑01", val:300},{date:"2024‑02", val:400},{date:"2024‑03", val:500}]},
+      {title:"Policy Overview", content:"The organization must adhere to ISO‑27001 standards...", type:"text"}
+    ]
+  };
+  parsed.blocks.forEach(b=> {
+    if (b.type==="timeSeries") b.componentType="timeline";
+    else if (b.type==="metric" && b.title.includes("Score")) b.componentType="flipCard";
+    else if (b.type==="metric") b.componentType="popCard";
+    else b.componentType="accordion";
+  });
+  parsed.blocks.forEach(b=>{
+    b.titleCopy = b.title.length>20? b.title.slice(0,20)+"…" : b.title;
+    b.summaryCopy = b.type==="text"? "Executive summary: "+b.content.slice(0,120)+"…" : "";
+  });
+  return parsed;
+}
+
+/* ---------- Core Workflow ---------- */
+async function generatePresentation() {
+  const demo = document.getElementById('demoMode').checked;
+  const data = demo ? getDemoData() : await parseUserFiles(); // placeholder for real parsing
+  const theme = document.getElementById('themeSelect').value;
+  const enabledViz = Array.from(document.querySelectorAll('.vizToggle')).filter(cb=>cb.checked).map(cb=>cb.value);
+  const html = buildPresentationHTML(data, theme, enabledViz);
+  document.getElementById('outputArea').value = html;
+  const blob = new Blob([html],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const dl = document.getElementById('downloadLink');
+  dl.href = url;
+  dl.style.display='inline-block';
+}
+
+/* ---------- Presentation Builder ---------- */
+function buildPresentationHTML(data, theme, enabledViz){
+  const css = `
+  <style>
+  :root{--gradient-start:${theme==='dark'?'#212529':'#008080'};--gradient-end:${theme==='dark'?'#495057':'#4b0082'};--radius:15px;--shadow:0 4px 12px rgba(0,0,0,0.1);}
+  body{font-family:Arial,sans-serif;margin:0;padding:2rem;background:linear-gradient(135deg,var(--gradient-start),var(--gradient-end));color:#fff;}
+  .flip-card,.accordion,.pop-card,.timeline,.stacked-bar{background:#fff;color:#000;border-radius:var(--radius);box-shadow:var(--shadow);margin:1rem;padding:1rem;}
+  .flip-card{perspective:1000px;}
+  .flip-card-inner{position:relative;transition:transform .6s;transform-style:preserve-3d;}
+  .flip-card:hover .flip-card-inner{transform:rotateY(180deg);}
+  .flip-card-front,.flip-card-back{position:absolute;width:100%;backface-visibility:hidden;padding:1rem;}
+  .flip-card-back{transform:rotateY(180deg);}
+  .accordion summary{font-weight:bold;cursor:pointer;}
+  .timeline{list-style:none;padding:0;position:relative;}
+  .timeline::before{content:'';position:absolute;left:20px;width:4px;background:#000;height:100%;}
+  .timeline li{margin-left:50px;padding:.5rem 0;position:relative;}
+  </style>`;
+  const bodyParts = data.blocks.map(b=>{
+    if (!enabledViz.includes(b.componentType)) return '';
+    switch(b.componentType){
+      case 'flipCard':
+        return `<div class="flip-card"><div class="flip-card-inner"><div class="flip-card-front"><h3>${b.titleCopy}</h3><p>${b.value}</p></div><div class="flip-card-back"><p>Details about ${b.titleCopy}</p></div></div></div>`;
+      case 'accordion':
+        return `<details class="accordion"><summary>${b.titleCopy}</summary><p>${b.summaryCopy || b.content}</p></details>`;
+      case 'popCard':
+        return `<div class="pop-card"><h3>${b.titleCopy}</h3><p>Value: ${b.value}</p></div>`;
+      case 'timeline':
+        const items = b.series.map(s=>`<li><span class="date">${s.date}</span><p>${s.val}</p></li>`).join('');
+        return `<ul class="timeline"><li><strong>${b.titleCopy}</strong></li>${items}</ul>`;
+      case 'stackedBar':
+        return `<canvas class="stacked-bar"></canvas>`;
+      default: return '';
+    }
+  }).join('\n');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Generated Presentation</title>${css}</head><body class="presentation">${bodyParts}<script>document.querySelectorAll('.stacked-bar').forEach(c=>{const ctx=c.getContext('2d');ctx.fillStyle='#4b0082';ctx.fillRect(0,0,c.width,c.height);});</script></body></html>`;
+}
+
+/* ---------- Event Listeners ---------- */
+document.getElementById('themeSelect').addEventListener('change',e=>setTheme(e.target.value));
+document.getElementById('generateBtn').addEventListener('click',generatePresentation);
+
+/* ---------- Drag & Drop (stub) ---------- */
+const dropzone=document.getElementById('dropzone');
+dropzone.addEventListener('click',()=>{alert('File picker not implemented in demo mode');});
+dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('dragover');});
+dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop',e=>{e.preventDefault();dropzone.classList.remove('dragover');alert('File upload handling is omitted – enable Demo Mode to see a result.');});
+
+/* ---------- Init ---------- */
+setTheme('corporate');
+</script>
+</body>
+</html>

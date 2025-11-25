@@ -1,0 +1,5 @@
+- [x] Write self‑contained HTML UI (index.html)
+- [x] Create implementation_plan.md describing build and deployment steps
+- [x] Verify generated HTML works locally (open in browser, test demo mode)
+- [x] Prepare Vercel deployment instructions and environment variable setup
+- [x] Document final deployment steps and handoff in walkthrough.md

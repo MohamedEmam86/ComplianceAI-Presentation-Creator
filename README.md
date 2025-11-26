@@ -1,35 +1,55 @@
-# Presentation Creator Tool – README
+# Data to Presentation Converter
 
-## Overview
-This repository contains a **single‑file, server‑less web application** (`index.html`) that lets users upload business data files, select a visual theme, toggle visualization components, and generate a **stand‑alone HTML presentation** (`presentation.html`). The UI runs entirely in the browser and includes a **Demo Mode** that simulates the three Gemini API calls with sample data.
+Transform any data format into stunning, interactive HTML presentations powered by Google's Gemini AI.
 
-## Files
-- `index.html` – The complete SPA (HTML, CSS, JavaScript). Open it locally to test the demo.
-- `walkthrough.md` – Documentation of the development steps, verification, and next actions.
-- `implementation_plan.md` – Detailed implementation and deployment plan (already reviewed).
-- `task.md` – Checklist of work items.
+## 🚀 Quick Start with GitHub Codespaces
 
-## Local Development
-1. Clone or copy the repository to a local folder.
-2. Open `index.html` in a modern browser (Chrome, Edge, Firefox).
-3. Click **Demo Mode** and **Generate Presentation** to see the workflow.
-4. The generated `presentation.html` will be offered for download. Open it offline to verify all components work.
+Since you are running this in the cloud, you don't need to install anything locally!
 
-## Production Deployment (Vercel)
-1. **Create a Git repository** (GitHub, GitLab, Bitbucket) and push the files.
-2. Sign in to **Vercel** and select **"Import Project"** → **"From Git Repository"**.
-3. Choose the repository and keep the default settings (static site, output directory `.`).
-4. **Add Environment Variable**:
-   - Name: `GEMINI_API_KEY`
-   - Value: *Your Gemini API key* (keep it secret).
-5. Deploy – Vercel will build and serve `index.html` at `<your‑project>.vercel.app`.
-6. The live UI will now be able to make real Gemini calls (replace the `parseUserFiles()` stub with actual file‑parsing logic).
+1.  **Push this code to GitHub**:
+    ```bash
+    git init
+    git add .
+    git commit -m "Initial commit"
+    # Add your remote origin
+    # git remote add origin https://github.com/yourusername/your-repo.git
+    # git push -u origin main
+    ```
 
-## Next Development Steps
-- Implement real file parsing for Excel, CSV, PDF, PPTX (e.g., `xlsx`, `pdfjs`).
-- Replace the demo‑mode hard‑coded data with actual Gemini API calls using the stored `GEMINI_API_KEY`.
-- Add automated tests (Cypress) for the generate flow.
-- Optionally create additional visual themes.
+2.  **Open in Codespaces**:
+    - Go to your GitHub repository.
+    - Click the green **Code** button.
+    - Select the **Codespaces** tab.
+    - Click **Create codespace on main**.
 
----
-*Prepared by Antigravity – Lead Architect*
+3.  **Run the App**:
+    - Codespaces will automatically install dependencies (this may take a minute).
+    - Once ready, the terminal will open. Run:
+      ```bash
+      npm run dev
+      ```
+    - A popup will appear to "Open in Browser". Click it to see your app!
+
+## 🛠️ Features
+
+- **AI-Powered**: Uses Google Gemini to generate content.
+- **Multi-Format**: Supports Excel, CSV, PDF, Word, PowerPoint.
+- **Interactive**: Flip cards, timelines, charts, and more.
+- **Exportable**: Generates a standalone HTML file you can share.
+
+## 📦 Deployment
+
+### Deploy to Vercel
+
+1.  Go to [Vercel](https://vercel.com).
+2.  Click **Add New Project**.
+3.  Import your GitHub repository.
+4.  Click **Deploy**.
+
+That's it! Vercel will build and host your application for free.
+
+## 🔑 API Key
+
+To use the tool, you will need a Google Gemini API Key.
+- Get one for free at [Google AI Studio](https://makersuite.google.com/app/apikey).
+- Enter it in the application UI when prompted.
